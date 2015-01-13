@@ -1,0 +1,8 @@
+Pylons Integration
+++++++++++++++++++
+
+The AuthKit Pylons documentation has been replaced by two chapters of the `Pylons Book <http://pylonsbook.com>`_:
+
+* Authentication and Authorization
+* Advanced AuthKit
+

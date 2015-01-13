@@ -1,0 +1,33 @@
+Download
+========
+
+Latest Release
+--------------
+
+The latest release and installation instructions are available from http://python.org/pypi/AuthKit
+
+Development Version
+-------------------
+
+You can checkout the latest AuthKit code from the svn repository with::
+    
+    svn co http://authkit.org/svn/AuthKit/trunk AuthKit
+
+or browse the source online at http://authkit.org/trac/browser/AuthKit/trunk
+
+Creating a Release
+------------------
+
+.. Note :: 
+
+    This is intended for developers only.
+    
+#. Make sure the ``setup.cfg`` file is set not use the dev version.
+#. Ensure the version number is correct in ``setup.py`` and that any dependencies have the correct version numbers.
+#. Check in the final release.
+#. Export a copy of trunk.
+#. Check in the exported trunk (together with the ``ez_setup`` directory in its current state) as a tag.
+#. Using the exported files create all the required distributions, register the package and upload the files.
+#. Change the ``setup.cfg`` file back to use ``dev`` in the main trunk.
+#. Increment the version number.
+#. Check in the changes.

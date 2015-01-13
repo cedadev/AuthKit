@@ -1,0 +1,8 @@
+AuthKit Manual
+++++++++++++++
+
+The AuthKit Manual has been replaced by two chapters of the `Pylons Book <http://pylonsbook.com>`_:
+
+* Authentication and Authorization
+* Advanced AuthKit
+

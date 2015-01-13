@@ -1,0 +1,5 @@
+
+    jaMEs:passWOrd1:pyLOns wiki adMin
+ben:password2:pylons admin editor
+    simon:password3:dJAngo
+        ian:paSsword4 wiki

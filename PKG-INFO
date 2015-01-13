@@ -1,0 +1,244 @@
+Metadata-Version: 1.0
+Name: AuthKit
+Version: 0.4.5
+Summary: An authentication and authorization toolkit for WSGI applications and frameworks
+Home-page: http://authkit.org/
+Author: James Gardner
+Author-email: james@pythonweb.org
+License: MIT
+Description: 
+        AuthKit
+        +++++++
+        
+        .. contents ::
+        
+        Summary
+        =======
+        
+        *   Built for WSGI applications and middleware
+        *   Sophisticated and extensible permissions system
+        *   Built in support for HTTP basic, HTTP digest, form, cookie and OpenID
+        authentication methods plus others
+        *   Easily define users, passwords and roles
+        *   Designed to be totally extensible so you can use the components to integrate
+        with a database, LDAP connection or your own custom system
+        *   Plays nicely with the `Pylons <http://pylonshq.com>`_ web framework
+        
+        There is also a `development version <https://hg.3aims.com/public/AuthKit>`_
+        which you can clone using Mercurial with this command: ``hg clone
+        https://hg.3aims.com/public/AuthKit``.
+        
+        Get Started
+        ===========
+        
+        * `Pylons Book <http://pylonsbook.com>`_ (the two chapters on *Authentication and
+        Authorization* and *Advanced AuthKit* form the AuthKit 0.4 documentation)
+        * `Module Reference <http://authkit.org/docs/0.4/module-index.html>`_
+        * `AuthKit Cookbook <http://wiki.pylonshq.com/display/authkitcookbook/Home>`_
+        * `Trac <http://authkit.org/trac>`_ - Tickets, Wiki [Note: subversion is out of
+        date]
+        * `Examples <https://hg.3aims.com/public/AuthKit/AuthKit/trunk/examples>`_
+        (click the files link).
+        
+        Author
+        ======
+        
+        `James Gardner <http://jimmyg.org/>`_ james at pythonweb dot org
+        
+        Development sponsored by `3aims <http://3aims.com/>`_ and
+        `Prometheus Research <http://www.prometheusresearch.com/>`_.
+        
+        
+        Changes
+        =======
+        
+        0.4.5
+        
+        * Bumped SQLAlchemy version to 0.5
+        * Fixed ticket 67 to add Python 2.4 support, patch by Kumar McMillan
+        
+        **NOTE**: The old trac system is no longer used. Any outstanding bugs should be
+        submitted **with patches and tests** to the AuthKit mailing list.
+        
+        0.4.4
+        
+        * Added patch by Phil Kershaw for Attribute exhange in OpenID
+        * Added patch by Phil Kershaw for hiding the continue button during
+        OpenID redirection
+        * Changed cookie handling so that if nouserincookie is set, the user data as
+        well as the username is stored in the session rather than the cookie
+        * Added a user_data function to the form method so you can set arbitrary
+        user data messages via the same mechanism as other options
+        
+        0.4.3
+        
+        * Updated authkit.authenticate.form to handle the suggest change in #61
+        * Added powerpack adaptors
+        * Changed the multi middleware to return the WSGI response rather than
+        iterating over it and yielding results.
+        * Fixed #50 OpenID problem and tested on blogger.com
+        * Added the ability to pass the environ dictionary to render() functions
+        * Added bad cookie customisation options to fix #65 but also to allow
+        bad cookie template customisation. See the docstring of the
+        authkit.authenticate.cookie module.
+        * Added a new algorithm based on ideas from #61 to guess the correct action
+        for the form produced by the form middleware but also added support for
+        an authkit.form.action option which allows you to manually override
+        AuthKit's guess. (The OpenID middleware calls this baseurl)
+        * Added user_set_password() methods to users API. Fixes #64.
+        * Removed arabic letters from the form handler. Fixes #40.
+        * Added headers to the form handling for IE. Fixes #54.
+        * Adding SQLAlchemy 0.5 support, uses session.add() instead of session.save()
+        * The multi handler now handles WSGI applications implemented as iterators,
+        it already supported generators. The multi2.py example demonstrates this.
+        * Set the pylons.status_code_redirect environment variable on all redirected
+        AuthKit responses
+        * Set the pylons.error_call environment variable on all redirected AuthKit
+        responses
+        * Trigger an error when trying to use server-side password encryption with
+        digest authentication
+        
+        0.4.2
+        
+        * Applied most of #59 and tested the two OpenID examples
+        * Added support for WebOb HTTPExceptions to remove a deprecation warning in
+        Pylons 0.9.7
+        * Fixed a missing md5 import in the cookie module
+        * Applied patch in ticket #52
+        
+        0.4.1
+        
+        * Added ``setup.fakeuser`` option which automatically sets the REMOTE_USER
+        so that it appears someone has signed in. Useful with setup.enable = False
+        
+        * The ``setup.enable = false`` option now also disables  authorisation
+        checks (reported by Rick Flosi)
+        
+        * Applied patch from Pawel Niewiadomski to fix #53
+        * Changed the import of the openid.sreg module to openid.extensions.sreg
+        * Fixed the encoding of the form.py file
+        * Updated the examples to use the latest syntax
+        * Updated the tests for the new SQLAlchemy drivers
+        * Added Daniel Pronych's SQLAlchemy drivers but with significant changes
+        * Fixed a bug due to a change in the latest version of Python OpenID
+        so that AuthKit OpenID works with Yahoo sign-ins. Phil Kershaw #50
+        * Updated the user/database example, it now works #43
+        * Updated user tokens code to fix #17
+        * Updated authkit.authenticate.multi so that it should fix #41 and pass
+        the WSGI writable from start_response() correctly.
+        * Added a form.method option so you can choose GET authentication for
+        cases when another piece of middleware has already parsed the form
+        variables (eg with repoze?).
+        * Fixed bug in form action generation for non-standard ports
+        * Fixed bug reported by Sam Gentle where remote addr is obtained from
+        X_FORWARDED_FOR after multiple proxies.
+        * AuthKit form authentication now picks up HTTP_X_FORWARDED_HOST and
+        HTTP_X_FORWARDED_PORT when generating an action. This allows you to run
+        an AuthKit app on port 80, proxied from 443 as long as you set up these
+        two (slightly unstandard) variables.
+        * Fixed #38, cookie sign out path should match the path specified in
+        the config file.
+        * Fixed #37, missing import of sys in digest authentication
+        * Updated SQLAlchemy code to use SQLAlchemyManager. Needs installing
+        manually with ``easy_install SQLAlchemyManager``.
+        * Added a user management api_version attribute and changed the API so that
+        the users object is set up on each request and recieves an environ
+        argument.
+        * OpenID middleware now no longer sets up beaker middleware itself. This
+        should now be done manually in the middleware stack. See the example in
+        examples/docs/open_id.py
+        * OpenID support now upgraded to use 2.0 (from Dalius Dobravolskas)
+        * Fixed encrypt typo with postgres users driver
+        * The cookie middleware now has a nouserincookie option which forces the
+        middleware to store the username in a Beaker session rather than in plain
+        text in the cookie. See examples/docs/form_no_user_in_cookie.py for an
+        example of its use.
+        * Form authentication method now defaults to 200 OK rather than 401 when
+        the sign in form is displayed so that it works with Safari 3 Beta.
+        * The cookie middleware Bad Ticket page now also uses 200 OK, also to
+        support Safari 3 Beta.
+        * The cookie middleware bad ticket now logs to debug rather than error to
+        avoid the ``No handlers could be found for logger
+        "authkit.authenticate.cookie"`` message you get with a bad cookie if no
+        error logging is specifically set up.
+        * Added a user management api_version attribute and changed the API so that
+        the users object is set up on each request and recieves an environ
+        argument.
+        * Fixed encrypt typo with postgres users driver
+        * Renamed the config_paste option to app_conf in authenticate middleware. If
+        you get an "No authkit.setup.method was specified" error when you are sure
+        it is specified, this might be why.
+        
+        0.4.0
+        
+        * Added support for encrypted passwords
+        * Fixed the IE7 bug in digest middleware
+        * Adding SSO sub-directory, redirecting API, and CAS auth handler.
+        * Fixed binding check to return none, instead of throwing an Exception (for
+        performance reasons).
+        * Moved start_response check outside of app_iter consumption since it must be
+        called by this point to comply with WSGI.
+        * Fixed consumption app iter in multi, loading entire response into ram.
+        * Adding changelog
+        * Added IP and Time based permission objects
+        * Started unit tests
+        * Extended the user management API and added SQLAlchemy driver and example
+        * Restructured the authenticate middleware into induvidual pluggable components
+        * Simplified the configuration file system
+        * Added OpenID dependencies
+        * Removed the larger SQLAlchemy based demos
+        * The cookie module uses ``authkit`` as a default cookie name, not ``auth_tkt``.
+        Any code which does anything manually with this cookie needs the name changing
+        if it wasn't explicitly set to ``auth_tkt`` in the config file.
+        
+        0.3.0pre5
+        
+        * Changed the arguments to the authkit.authenticate.middleware() factory. You
+        will need to update your middleware setup to use app_conf instead of
+        config_paste for the app_conf dictionary.
+        
+        0.3
+        
+        * Re-written from scratch to be a modular toolkit for building your own auth
+        framework rather than an all-in-one solution.
+        
+        0.2
+        
+        * Re-written from scratch so to use SQLAlchemy only, old driver system considered
+        unnecessary and limiting. Also doesn't fit in with current Pylons
+        best-practice.
+        
+        0.1
+        
+        * Based on the web.auth 0.6 module from www.pythonweb.org, support for SQLObject
+        driver included
+        
+        
+        License
+        =======
+        
+        Copyright (c) Copyright 2005-2007 James Gardner <james at pythonweb dot org>
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in
+        all copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+        THE SOFTWARE.
+        
+        
+        Download
+        ========
+        
+Platform: UNKNOWN

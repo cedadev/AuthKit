@@ -1,0 +1,41 @@
+AuthKit
++++++++
+
+.. contents ::
+
+Summary
+=======
+
+*   Built for WSGI applications and middleware
+*   Sophisticated and extensible permissions system
+*   Built in support for HTTP basic, HTTP digest, form, cookie and OpenID
+    authentication methods plus others
+*   Easily define users, passwords and roles
+*   Designed to be totally extensible so you can use the components to integrate
+    with a database, LDAP connection or your own custom system
+*   Plays nicely with the `Pylons <http://pylonshq.com>`_ web framework
+    
+There is also a `development version <https://hg.3aims.com/public/AuthKit>`_
+which you can clone using Mercurial with this command: ``hg clone
+https://hg.3aims.com/public/AuthKit``.
+
+Get Started
+===========
+
+* `Pylons Book <http://pylonsbook.com>`_ (the two chapters on *Authentication and
+  Authorization* and *Advanced AuthKit* form the AuthKit 0.4 documentation)
+* `Module Reference <http://authkit.org/docs/0.4/module-index.html>`_
+* `AuthKit Cookbook <http://wiki.pylonshq.com/display/authkitcookbook/Home>`_
+* `Trac <http://authkit.org/trac>`_ - Tickets, Wiki [Note: subversion is out of 
+  date]
+* `Examples <https://hg.3aims.com/public/AuthKit/AuthKit/trunk/examples>`_ 
+  (click the files link).
+
+Author
+======
+
+`James Gardner <http://jimmyg.org/>`_ james at pythonweb dot org 
+
+Development sponsored by `3aims <http://3aims.com/>`_ and
+`Prometheus Research <http://www.prometheusresearch.com/>`_.
+

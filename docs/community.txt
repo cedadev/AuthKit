@@ -1,0 +1,8 @@
+Community
+=========
+
+Mailing List
+------------
+
+Currently any questions, suggestions, and patches can be directed at the 
+`Pylons-discuss mailing list <http://groups.google.com/group/pylons-discuss>`_.
