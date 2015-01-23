@@ -120,7 +120,7 @@ class OpenIDAuthHandler(object):
             self.charset = ''
         else:
             self.charset = '; charset='+charset
-
+        
     def __call__(self, environ, start_response):
         baseurl = self.baseurl or construct_url(
             environ, 
@@ -188,6 +188,8 @@ class AuthOpenIDHandler:
         session_middleware='beaker.session',
         path_verify='/verify', 
         path_process='/process',
+        openid_form_fieldname=None, 
+        force_redirect=False,
         urltouser=None,
         charset=None,
         sreg_required=None,
@@ -201,6 +203,7 @@ class AuthOpenIDHandler:
         self.path_signedin = path_signedin
         self.path_verify = path_verify
         self.path_process = path_process
+        
         self.session_middleware = session_middleware
         self.app = app
         self.urltouser = urltouser
@@ -208,6 +211,22 @@ class AuthOpenIDHandler:
             self.charset = ''
         else:
             self.charset = '; charset='+charset
+        
+        # Make OpenID field name in form submission field configurable
+        if openid_form_fieldname is None:
+            self.openid_form_fieldname = 'openid'
+        else:
+            self.openid_form_fieldname = openid_form_fieldname
+    
+        # Force Relying Party to send a 301 response back to the user agent
+        # regardless of the size of the request.  With this set to False,
+        # the Relying Party will check the size of request and if it above a 
+        # limit change the behaviour to do a POST to the OpenID Provider instead
+        # of a redirect.  This is measure to avoid exceeding the URL length
+        # limit.  There is no fixed limit set by HTTP it is dependent on
+        # implementations
+        self.force_redirect = force_redirect
+        
         self.sreg_required = sreg_required
         self.sreg_optional = sreg_optional
         self.sreg_policyurl = sreg_policyurl
@@ -246,7 +265,7 @@ class AuthOpenIDHandler:
             with_path_info=False
         )
         params = dict(paste.request.parse_formvars(environ))
-        openid_url = params.get('openid')
+        openid_url = params.get(self.openid_form_fieldname)
         if not openid_url:
             response = render(
                 self.template,
@@ -265,7 +284,7 @@ class AuthOpenIDHandler:
             return response
     
         oidconsumer = self._get_consumer(environ)
-       # import pdb; pdb.set_trace()
+
         try:
             request_ = oidconsumer.begin(openid_url)
         except consumer.DiscoveryFailure, exc:
@@ -333,7 +352,7 @@ class AuthOpenIDHandler:
                 trust_root = baseurl
                 return_to = baseurl + self.path_process
 
-                if request_.shouldSendRedirect():
+                if self.force_redirect or request_.shouldSendRedirect():
                     redirect_url = request_.redirectURL(
                         trust_root, return_to)
 
@@ -532,6 +551,8 @@ class OpenIDUserSetter(AuthKitUserSetter):
             template = options['template'],
             urltouser = options['urltouser'],
             charset = options['charset'],
+            openid_form_fieldname=options['openid_form_fieldname'],
+            force_redirect=options['force_redirect'],
             sreg_required=options['sreg_required'],
             sreg_optional=options['sreg_optional'],
             sreg_policyurl=options['sreg_policyurl'],
@@ -572,6 +593,8 @@ def load_openid_config(
         'template': template_,
         'urltouser': urltouser,
         'charset': auth_conf.get('charset'),
+        'openid_form_fieldname': auth_conf.get('openid_form_fieldname'),
+        'force_redirect': auth_conf.get('force_redirect'),
         'sreg_required': auth_conf.get('sreg.required'),
         'sreg_optional': auth_conf.get('sreg.optional'),
         'sreg_policyurl': auth_conf.get('sreg.policyurl'),
@@ -586,6 +609,8 @@ def load_openid_config(
         'path_verify':auth_conf.get('path.verify', '/verify'),
         'baseurl':user_setter_params['baseurl'],
         'charset':user_setter_params['charset'],
+        'force_redirect': auth_conf.get('force_redirect', False),
+        'openid_form_fieldname': auth_conf.get('openid_form_fieldname', None),
     }
     # The following lines were suggested in #59 but I don't know
     # why they are needed because you shouldn't be using the 
@@ -651,7 +676,7 @@ def make_passurl_handler(
         template=auth_handler_params['template'],
         path_verify=auth_handler_params['path_verify'],
         baseurl=auth_handler_params['baseurl'],
-        charset = auth_handler_params['charset'],
+        charset=auth_handler_params['charset']
     )
     app.add_checker('openid', status_checker)
     # XXX Some of this functionality should be moved into OpenIDAuthHandler
