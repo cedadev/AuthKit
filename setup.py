@@ -21,7 +21,7 @@ long_description = (
     '========\n'
 )
 
-version = '0.4.5'
+version = '0.4.6-ceda'
 
 setup(
     name="AuthKit",
