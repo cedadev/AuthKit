@@ -244,58 +244,62 @@ class AuthKitTicket(AuthTicket):
             c[self.cookie_name]['secure'] = 'true'
         return c
         
-# The other methods in the paste file, calculate_digest and encode_ip_timestamp
-# are utility methods which you shouldn't need to use on their own.
-
-def parse_ticket(secret, ticket, ip, session):
-    """
-    Parse the ticket, returning (timestamp, userid, tokens, user_data).
-
-    If the ticket cannot be parsed, ``BadTicket`` will be raised with
-    an explanation.
-    """
-    log.debug("parse_ticket(secret=%r, ticket=%r, ip=%r)", secret, ticket, ip)
-    ticket = ticket.strip('"')
-    digest = ticket[:32]
-    try:
-        timestamp = int(ticket[32:40], 16)
-    except ValueError, e:
-        raise BadTicket('Timestamp is not a hex integer: %s' % e)
-
-    user_data = None
-    if session is not None:
-        if not session.has_key('authkit.cookie.user'):
-            raise BadTicket('No authkit.cookie.user key exists in the session')
-        if not session.has_key('authkit.cookie.user_data'):
-            raise BadTicket('No authkit.cookie.user_data key exists in the session')
-        userid = session['authkit.cookie.user']
-        user_data = session['authkit.cookie.user_data']
-        data = ticket[40:]
-    else:
+    # The other methods in the paste file, calculate_digest and
+    # encode_ip_timestamp are utility methods which you shouldn't need to use on 
+    # their own.
+    @staticmethod
+    def parse_ticket(secret, ticket, ip, session):
+        """
+        Parse the ticket, returning (timestamp, userid, tokens, user_data).
+    
+        If the ticket cannot be parsed, ``BadTicket`` will be raised with
+        an explanation.
+        """
+        log.debug("parse_ticket(secret=%r, ticket=%r, ip=%r)", secret, ticket, 
+                  ip)
+        ticket = ticket.strip('"')
+        digest = ticket[:32]
         try:
-            userid, data = ticket[40:].split('!', 1)
-        except ValueError:
-            raise BadTicket('userid is not followed by !')
-    if '!' in data:
-        tokens, new_user_data = data.split('!', 1)
-        if user_data is None:
-            user_data = new_user_data
-    else:
-        # @@: Is this the right order?
-        tokens = ''
-        if user_data is None:
-            user_data = data
+            timestamp = int(ticket[32:40], 16)
+        except ValueError, e:
+            raise BadTicket('Timestamp is not a hex integer: %s' % e)
     
-    expected = calculate_digest(ip, timestamp, secret, userid, tokens, 
-                                user_data)
-    
-    if expected != digest:
-        raise BadTicket('Digest signature is not correct',
-                        expected=(expected, digest))
-    
-    tokens = tokens.split(',')
-    
-    return (timestamp, userid, tokens, user_data)
+        user_data = None
+        if session is not None:
+            if not session.has_key('authkit.cookie.user'):
+                raise BadTicket('No authkit.cookie.user key exists in the '
+                                'session')
+            if not session.has_key('authkit.cookie.user_data'):
+                raise BadTicket('No authkit.cookie.user_data key exists in the '
+                                'session')
+            userid = session['authkit.cookie.user']
+            user_data = session['authkit.cookie.user_data']
+            data = ticket[40:]
+        else:
+            try:
+                userid, data = ticket[40:].split('!', 1)
+            except ValueError:
+                raise BadTicket('userid is not followed by !')
+        if '!' in data:
+            tokens, new_user_data = data.split('!', 1)
+            if user_data is None:
+                user_data = new_user_data
+        else:
+            # @@: Is this the right order?
+            tokens = ''
+            if user_data is None:
+                user_data = data
+        
+        expected = calculate_digest(ip, timestamp, secret, userid, tokens, 
+                                    user_data)
+        
+        if expected != digest:
+            raise BadTicket('Digest signature is not correct',
+                            expected=(expected, digest))
+        
+        tokens = tokens.split(',')
+        
+        return (timestamp, userid, tokens, user_data)
     
 def calculate_digest(ip, timestamp, secret, userid, tokens, user_data):
     log.debug(
@@ -388,7 +392,7 @@ class CookieUserSetter(AuthKitUserSetter, AuthTKTMiddleware):
         log.debug("Our cookie %r value is therefore %r", self.cookie_name, 
                   cookie_value)
         remote_addr = environ.get('HTTP_X_FORWARDED_FOR', 
-                                  environ.get('REMOTE_ADDR','0.0.0.0'))
+                                  environ.get('REMOTE_ADDR', '0.0.0.0'))
         remote_addr = remote_addr.split(',')[0]
         log.debug("Remote addr %r, value %r, include_ip %r", remote_addr, 
                   cookie_value, self.include_ip)
@@ -403,8 +407,10 @@ class CookieUserSetter(AuthKitUserSetter, AuthTKTMiddleware):
                 log.debug("Parsing ticket secret %r, cookie value %r, "
                           "remote address %s", self.secret, cookie_value, 
                           remote_addr)
+                
                 timestamp, userid, tokens, user_data = \
-                    parse_ticket(self.secret, cookie_value, remote_addr, session)
+                    self.ticket_class.parse_ticket(self.secret, cookie_value, 
+                                                   remote_addr, session)
             except BadTicket, e:
                 if e.expected:
                     log.warning("BadTicket: %s Expected: %s", e, e.expected)
@@ -487,7 +493,8 @@ class CookieUserSetter(AuthKitUserSetter, AuthTKTMiddleware):
         if self.include_ip:
             # Fixes ticket #30
             # @@@ should this use environ.get('REMOTE_ADDR','0.0.0.0')?
-            remote_addr = environ.get('HTTP_X_FORWARDED_FOR', environ['REMOTE_ADDR'])
+            remote_addr = environ.get('HTTP_X_FORWARDED_FOR', 
+                                      environ['REMOTE_ADDR'])
             remote_addr = remote_addr.split(',')[0]
         else:
             remote_addr = '0.0.0.0'
