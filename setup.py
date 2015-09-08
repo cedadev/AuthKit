@@ -5,7 +5,7 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
-import sys, os
+import os
 
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()

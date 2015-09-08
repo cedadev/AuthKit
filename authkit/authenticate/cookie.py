@@ -125,13 +125,11 @@ after all your usual application infrastructure is in place.
 from paste.deploy.converters import asbool
 from paste.auth.auth_tkt import *
 import md5
-import os
 import inspect
-import types
 import time
 import logging
-from paste.deploy.converters import asbool
-from authkit.authenticate import strip_base, swap_underscore
+import Cookie
+from authkit.authenticate import strip_base
 from authkit.authenticate import AuthKitConfigError
 from authkit.authenticate import get_template, AuthKitUserSetter
 
