@@ -109,14 +109,14 @@ if __name__ == '__main__':
         basic_realm='Test Realm', 
         basic_authenticate_function=valid
     )
-    print """
+    print("""
 Clear the HTTP authentication first by closing your browser if you have been
 testing other basic authentication examples on the same port.
 
 You will be able to sign in as any user as long as the password is the same as
 the username, but all users apart from `james' will be denied access to the
 resources.
-"""
+""")
     
     
     serve(app, host='0.0.0.0', port=8080)

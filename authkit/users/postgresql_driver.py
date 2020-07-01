@@ -24,7 +24,7 @@ class UsersDriver(Users):
             def encrypt(password):
                 return password
         self.encrypt = encrypt
-        if isinstance(data, (str, unicode)):
+        if isinstance(data, str):
             data_parts = data.split('\n')
             data = []
             if len(data_parts) == 2:

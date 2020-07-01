@@ -15,11 +15,11 @@ def sample_app(environ, start_response):
 
     The path ``/`` always displays the environment.
     """
-    if environ['PATH_INFO']=='/private' and not environ.has_key('REMOTE_USER'):
+    if environ['PATH_INFO']=='/private' and 'REMOTE_USER' not in environ:
         start_response('401 Not signed in', [])
     elif environ['PATH_INFO'] == '/signout':
         start_response('200 OK', [('Content-type', 'text/plain')])
-        if environ.has_key('REMOTE_USER'):
+        if 'REMOTE_USER' in environ:
             return ["Signed Out"]
         else:
             return ["Not signed in"]
@@ -57,7 +57,7 @@ def sample_app(environ, start_response):
     
     start_response('200 OK', [('Content-type', 'text/plain')])
     result = ['You Have Access To This Page.\n\nHere is the environment...\n\n']
-    for k,v in environ.items():
+    for k,v in list(environ.items()):
         result.append('%s: %s\n'%(k,v))
     return result
   

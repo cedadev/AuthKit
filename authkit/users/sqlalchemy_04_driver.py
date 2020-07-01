@@ -106,7 +106,7 @@ class UsersFromDatabase(Users):
                 return password
         self.encrypt = encrypt
         self.environ = environ
-        if not environ.has_key('sqlalchemy.model') or not environ.has_key('sqlalchemy.session'):
+        if 'sqlalchemy.model' not in environ or 'sqlalchemy.session' not in environ:
             raise AuthKitError("The required SQLAlchemyManager middleware is not present")
         self.model = environ['sqlalchemy.model']
         # This object is set up on each request so we can assign the session

@@ -101,7 +101,7 @@ class _Authorize(object):
             try:
                 return self.permission.check(self.app, environ, start_response)
             except NotAuthenticatedError:
-                if environ.has_key('REMOTE_USER'):
+                if 'REMOTE_USER' in environ:
                     raise NonConformingPermissionError(
                         'Faulty permission: NotAuthenticatedError raised '
                         'but REMOTE_USER key is present.'

@@ -15,7 +15,7 @@ class AppClass(object):
         self.start_response('200 OK', [('Content-type','text/html')])
         return self
 
-    def next(self):
+    def __next__(self):
         time.sleep(1)
         if self.pos < len(self.data):
             res = str(self.data[self.pos])

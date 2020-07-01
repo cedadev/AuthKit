@@ -10,7 +10,7 @@ CAS 2.0 service validation (which can take proxy tickets).
 `Protocol Reference <http://www.ja-sig.org/products/cas/overview/protocol/index.html>`_
 """
 import logging
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from authkit.authenticate.sso.api import *
 
@@ -42,7 +42,7 @@ class AuthCASHandler(RedirectingAuthHandler):
             # CAS protocol
             assert 'renew' not in kwargs
         
-        args = urllib.urlencode(kwargs)
+        args = urllib.parse.urlencode(kwargs)
         return self.authority + "login?" + args
 
 class AuthCASMiddleware(RedirectingAuthMiddleware):
@@ -72,7 +72,7 @@ class AuthCASMiddleware(RedirectingAuthMiddleware):
         kwargs = {'service': service, 'ticket':ticket}
         if req.environ.get('authkit.sso.cas.renew'):
             kwargs['renew'] = 'true'
-        args = urllib.urlencode(kwargs)
+        args = urllib.parse.urlencode(kwargs)
                 
         # XXX TODO: Store whether renew was used for this request to ensure
         #           that the validation asks for it as well
@@ -84,7 +84,7 @@ class AuthCASMiddleware(RedirectingAuthMiddleware):
             # We use proxyValidate for CAS 2.0 because it will handle both
             # service and proxy ticket validation
             requrl = self.authority + "proxyValidate?" + args
-            response = urllib.urlopen(requrl).read()
+            response = urllib.request.urlopen(requrl).read()
             log.debug("Raw response of auth verification: \n\t%s", response)
             tree = ElementTree.fromstring(response)
             valid = tree[0].tag.endswith('authenticationSuccess')
@@ -110,7 +110,7 @@ class AuthCASMiddleware(RedirectingAuthMiddleware):
         else:
             log.debug("Validating using CAS 1.0")
             requrl = self.authority + "validate?" + args
-            result = urllib.urlopen(requrl).read().split("\n")
+            result = urllib.request.urlopen(requrl).read().split("\n")
             log.debug("Raw response of auth verification: \n\t%s", result)
             valid = 'yes' == result[0]
             results = {}

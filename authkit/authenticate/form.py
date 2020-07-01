@@ -26,7 +26,7 @@ from authkit.authenticate.multi import MultiHandler, status_checker
 
 import inspect
 import logging
-import urllib
+import urllib.request, urllib.parse, urllib.error
 log = logging.getLogger('authkit.authenticate.form')
 
 def user_data(state):
@@ -56,7 +56,7 @@ def template(method=False):
 
 class AttributeDict(dict):
     def __getattr__(self, name):
-        if not self.has_key(name):
+        if name not in self:
             raise AttributeError('No such attribute %r'%name)
         return self.__getitem__(name)
 
@@ -125,10 +125,10 @@ class FormAuthHandler(AuthKitAuthHandler, AuthFormHandler):
         # Inspect the function to see if we can pass it anything useful:
         args = {}
         kargs = {'environ':environ}
-        if environ.has_key('gi.state'):
+        if 'gi.state' in environ:
             kargs['state'] = environ['gi.state']
         for name in inspect.getargspec(self.template)[0]:
-            if kargs.has_key(name):
+            if name in kargs:
                 args[name] = kargs[name]
         if self.method != 'post':
             args['method'] = self.method
@@ -203,14 +203,14 @@ def construct_url(environ, with_query_string=True, with_path_info=True,
     else:
         url = 'http'+url
     if script_name is None:
-        url += urllib.quote(environ.get('SCRIPT_NAME',''))
+        url += urllib.parse.quote(environ.get('SCRIPT_NAME',''))
     else:
-        url += urllib.quote(script_name)
+        url += urllib.parse.quote(script_name)
     if with_path_info:
         if path_info is None:
-            url += urllib.quote(environ.get('PATH_INFO',''))
+            url += urllib.parse.quote(environ.get('PATH_INFO',''))
         else:
-            url += urllib.quote(path_info)
+            url += urllib.parse.quote(path_info)
     if with_query_string:
         if querystring is None:
             if environ.get('QUERY_STRING'):

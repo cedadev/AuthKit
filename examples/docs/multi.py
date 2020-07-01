@@ -66,7 +66,7 @@ class EnvironKeyAuthSwitcher(AuthSwitcher):
         self.key = key
 
     def switch(self, environ, status, headers):
-        if environ.has_key(self.key) and environ[self.key] == self.method:
+        if self.key in environ and environ[self.key] == self.method:
             return True
         return False
 
@@ -148,7 +148,7 @@ def sample_app(environ, start_response):
             '200 OK', 
             [('Content-type', 'text/plain; charset=UTF-8')]
         )
-        if environ.has_key('REMOTE_USER'):
+        if 'REMOTE_USER' in environ:
             return ["Signed Out"]
         else:
             return ["Not signed in"]
@@ -166,7 +166,7 @@ def sample_app(environ, start_response):
     result = [
         'You Have Access To This Page.\n\nHere is the environment...\n\n'
     ]
-    for k,v in environ.items():
+    for k,v in list(environ.items()):
         result.append('%s: %s\n'%(k,v))
     return result
 

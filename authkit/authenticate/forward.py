@@ -30,7 +30,7 @@ class MyRecursive(object):
             if hasattr(app_iter, 'close'):
                 app_iter.close()
             return result
-        except ForwardRequestException, e:
+        except ForwardRequestException as e:
             return CheckForRecursionMiddleware(e.factory(self), environ)(environ, start_response)
 
 
@@ -42,7 +42,7 @@ def make_forward_handler(
     prefix='authkit.forward', 
 ):
     signin_path = None
-    if auth_conf.has_key('internalpath'):
+    if 'internalpath' in auth_conf:
         warnings.warn(
             'The %sinternalpath key is deprecated. Please use '
             '%ssigninpath.'%(prefix, prefix), 
@@ -50,7 +50,7 @@ def make_forward_handler(
             2
         )
         signin_path = auth_conf['internalpath']
-    elif auth_conf.has_key('signinpath'):
+    elif 'signinpath' in auth_conf:
         signin_path = auth_conf['signinpath']
     else:
         raise AuthKitConfigError("No %ssigninpath key specified"%prefix)

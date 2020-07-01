@@ -409,7 +409,7 @@ def test_users_api_database():
             ]:
                 try:
                     getattr(plugin, func)('nouser')
-                except AuthKitNoSuchUserError, e:
+                except AuthKitNoSuchUserError as e:
                     pass
                 else:
                     raise AssertionError("Failed to throw a no user error")
@@ -421,7 +421,7 @@ def test_users_api_database():
             ]:
                 try:
                     getattr(plugin, func)('nouser','somevar')
-                except AuthKitNoSuchUserError, e:
+                except AuthKitNoSuchUserError as e:
                     pass
                 else:
                     raise AssertionError("Failed to throw a no user error")
@@ -705,7 +705,7 @@ def test_users_model_api_database():
         ]:
             try:
                 getattr(plugin, func)('nouser')
-            except AuthKitNoSuchUserError, e:
+            except AuthKitNoSuchUserError as e:
                 pass
             else:
                 raise AssertionError("Failed to throw a no user error")
@@ -717,7 +717,7 @@ def test_users_model_api_database():
         ]:
             try:
                 getattr(plugin, func)('nouser','somevar')
-            except AuthKitNoSuchUserError, e:
+            except AuthKitNoSuchUserError as e:
                 pass
             else:
                 raise AssertionError("Failed to throw a no user error")

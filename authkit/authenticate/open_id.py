@@ -60,7 +60,7 @@ import cgi
 import paste.request
 import string
 import sys
-from urlparse import urlparse # PJK 24/02/09 for updating referer session item
+from urllib.parse import urlparse # PJK 24/02/09 for updating referer session item
 from authkit.authenticate import AuthKitConfigError
 from paste.request import construct_url
 from paste.util.import_string import eval_import
@@ -101,7 +101,7 @@ def render(template, **p):
             **p
         )
     else:
-        for k, v in p.items():
+        for k, v in list(p.items()):
             template = template().replace('$'+k, v)
         return template
 
@@ -240,7 +240,7 @@ class AuthOpenIDHandler:
 
     def __call__(self, environ, start_response):
         # If we are called it is because we want to sign in, so show the 
-        if not environ.has_key(self.session_middleware):
+        if self.session_middleware not in environ:
             raise AuthKitConfigError(
                 'The session middleware %r is not present. '
                 'Have you set up the session middleware?'%(
@@ -287,7 +287,7 @@ class AuthOpenIDHandler:
 
         try:
             request_ = oidconsumer.begin(openid_url)
-        except consumer.DiscoveryFailure, exc:
+        except consumer.DiscoveryFailure as exc:
             response = render(
                 self.template,
                 message='Error retrieving identity URL: %s' % (
@@ -580,7 +580,7 @@ def load_openid_config(
     if isinstance(urltouser, str):
         urltouser = eval_import(urltouser)
     for option in ['store.type', 'store.config', 'path.signedin']:
-        if not auth_conf.has_key(option):
+        if option not in auth_conf:
             raise AuthKitConfigError(
                 'Missing the config key %s%s'%(prefix, option)
             )
@@ -634,7 +634,7 @@ def _load_ax_config(auth_conf):
     
     # Type URI field determines which attributes to include.  Other attribute
     # properties such alias, count and required may be set to defaults
-    ax_attr_list = [k.replace('ax.typeuri.', '') for k in auth_conf.iterkeys()
+    ax_attr_list = [k.replace('ax.typeuri.', '') for k in auth_conf.keys()
                     if k.startswith('ax.typeuri.')]
     for i in ax_attr_list:
         typeURI = auth_conf['ax.typeuri.%s' % i]

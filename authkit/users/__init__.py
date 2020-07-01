@@ -432,7 +432,7 @@ class UsersReadOnly(Users):
         Returns a lowercase list of all role names ordered alphabetically
         """
         roles = []
-        for k,v in self.roles.items():
+        for k,v in list(self.roles.items()):
             for role in v:
                 role_ = role.lower()
                 if role_ and role_ not in roles:
@@ -452,7 +452,7 @@ class UsersReadOnly(Users):
         Returns a lowercase list of all groups ordered alphabetically
         """
         groups = []
-        for k,v in self.groups.items():
+        for k,v in list(self.groups.items()):
             if v and v not in groups:
                 groups.append(v)
         groups.sort()
@@ -576,7 +576,7 @@ def parse(data):
                     counter,
                 )
             )
-        if passwords.has_key(username):
+        if username in passwords:
             raise AuthKitConfigError(
                 'Username %r defined twice in authenticate list %r'%(
                     username,
@@ -590,14 +590,14 @@ def parse(data):
         if group:
             groups[username] = group
         counter += 1
-    usernames = passwords.keys()
+    usernames = list(passwords.keys())
     usernames.sort()
     for username in usernames:
-        if not passwords.has_key(username):
+        if username not in passwords:
             raise AuthKitError('No password specified for user %r'%username)
-        if not roles.has_key(username):
+        if username not in roles:
             roles[username] = []
-        if not groups.has_key(username):
+        if username not in groups:
             groups[username] = None
     assert len(usernames) == len(passwords) == len(roles) == len(groups)
     return usernames, passwords, roles, groups

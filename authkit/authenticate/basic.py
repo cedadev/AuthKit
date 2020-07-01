@@ -104,7 +104,7 @@ class BasicAuthHandler(AuthKitAuthHandler):
         self.authenticate = AuthBasicAuthenticator(realm, authfunc)
 
     def __call__(self, environ, start_response):
-        if environ.has_key('authkit.multi'):
+        if 'authkit.multi' in environ:
             authenitcation = self.authenticate.build_authentication()
             return authenitcation.wsgi_application(environ, start_response)
         else:

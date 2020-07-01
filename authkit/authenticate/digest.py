@@ -42,7 +42,7 @@ to use sha would be a good thing.
 """
 from paste.httpexceptions import HTTPUnauthorized
 from paste.httpheaders import *
-import md5, time, random, urllib2, sys
+import md5, time, random, urllib.request, urllib.error, urllib.parse, sys
 from authkit.authenticate.multi import MultiHandler, status_checker
 from authkit.authenticate import AuthKitConfigError, get_template, \
    valid_password, get_authenticate_function, strip_base, RequireEnvironKey, \
@@ -73,7 +73,7 @@ class AuthDigestAuthenticator(object):
                   'nonce': nonce, 'opaque': opaque }
         if stale:
             parts['stale'] = 'true'
-        head = ", ".join(['%s="%s"' % (k,v) for (k,v) in parts.items()])
+        head = ", ".join(['%s="%s"' % (k,v) for (k,v) in list(parts.items())])
         head = [("WWW-Authenticate", 'Digest %s' % head)]
         return HTTPUnauthorized(headers=head)
 
@@ -203,7 +203,7 @@ class DigestAuthHandler(AuthKitAuthHandler):
         self.authenticate = AuthDigestAuthenticator(realm, authfunc)
         
     def __call__(self, environ, start_response):
-        if environ.has_key('authkit.multi'):
+        if 'authkit.multi' in environ:
             # Shouldn't ever allow a response if this is called via the
             # multi handler
             authenitcation = self.authenticate.build_authentication()

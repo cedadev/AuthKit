@@ -19,7 +19,7 @@ class UsersFromDatabase(Users):
             def encrypt(password):
                 return password
         self.encrypt = encrypt
-        if isinstance(model, (str, unicode)):
+        if isinstance(model, str):
             model = eval_import(model)
         if hasattr(model, 'authkit_initialized'):
             raise AuthKitError(

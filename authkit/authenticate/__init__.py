@@ -42,7 +42,7 @@ import os
 import os.path
 
 from paste.util.import_string import eval_import
-from multi import MultiHandler, status_checker
+from .multi import MultiHandler, status_checker
 from pkg_resources import iter_entry_points, load_entry_point
 from paste.deploy.converters import asbool
 
@@ -81,7 +81,7 @@ log = logging.getLogger('authkit.authenticate')
     
 def strip_base(conf, base):
     result = {}
-    for key in conf.keys():
+    for key in list(conf.keys()):
         if key.startswith(base):
             result[key[len(base):]] = conf[key]
     return result
@@ -90,7 +90,7 @@ def swap_underscore(*confs):
     results = []
     for conf in confs:
         result = {}
-        for k,v in conf.items():
+        for k,v in list(conf.items()):
             result[k.replace('.','_')] = v
         results.append(result)
     return results
@@ -118,7 +118,7 @@ def valid_password(environ, username, password):
     how to create your own ``Users`` objects.
     """
     log.debug("valid_password called. username: %s", username)
-    if not environ.has_key('authkit.users'):
+    if 'authkit.users' not in environ:
         raise no_authkit_users_in_environ
     users = environ['authkit.users']
     if not users.user_exists(username):
@@ -149,7 +149,7 @@ def digest_password(environ, realm, username):
     log.debug(
         "digest_password called. username: %s, realm: %s", username, realm
     )
-    if not environ.has_key('authkit.users'):
+    if 'authkit.users' not in environ:
         raise no_authkit_users_in_environ
     users = environ['authkit.users']
     if users.user_exists(username):
@@ -186,16 +186,16 @@ def get_authenticate_function(app, authenticate_conf, format, prefix):
     if len(authenticate_conf) < 1:
         raise AuthKitConfigError('Expected at least one authenticate key, not'
                                  ' %r'%authenticate_conf)
-    if authenticate_conf.keys() == ['function']:
+    if list(authenticate_conf.keys()) == ['function']:
         function = authenticate_conf['function']
-        if isinstance(function, (str, unicode)):
+        if isinstance(function, str):
             function = eval_import(function)
     else:
         user_conf = strip_base(authenticate_conf, 'user.')
         if not user_conf:
             raise AuthKitConfigError('No authenticate function or users specified')
         else:
-            if user_conf.has_key('encrypt'):
+            if 'encrypt' in user_conf:
                 if format == 'digest':
                     raise AuthKitConfigError('Encryption cannot be used with '
                         'digest authentication because the server needs to '
@@ -208,9 +208,9 @@ def get_authenticate_function(app, authenticate_conf, format, prefix):
             else:
                 encrypt = None
             user_object = 'authkit.users.UsersFromString'
-            if 'type' in user_conf.keys():
+            if 'type' in list(user_conf.keys()):
                 user_object = user_conf['type']
-            if isinstance(user_object, (str, unicode)):
+            if isinstance(user_object, str):
                 user_object = eval_import(user_object)
 
             if not hasattr(user_object, "api_version"):
@@ -265,13 +265,13 @@ def get_template(template_conf, prefix):
     template = None
     if len(template_conf) != 1:
         raise AuthKitConfigError('Expected one template entry, not %r' % 
-                                 (', '.join(template_conf.keys())))
-    if template_conf.keys()[0] not in ['string', 'file', 'obj']:
+                                 (', '.join(list(template_conf.keys()))))
+    if list(template_conf.keys())[0] not in ['string', 'file', 'obj']:
         raise AuthKitConfigError("Template option can only be 'string', 'file'"
                                  " or 'obj'")
-    if template_conf.keys()[0] == 'string':
+    if list(template_conf.keys())[0] == 'string':
         template = template_conf['string']
-    elif template_conf.keys()[0] == 'file':
+    elif list(template_conf.keys())[0] == 'file':
         if not os.path.exists(template_conf['file']):
             raise AuthKitConfigError('No such file %r exists. It was specified'
                                      ' by config option %r' % 
@@ -283,7 +283,7 @@ def get_template(template_conf, prefix):
             raise AuthKitConfigError('No data in template file %s specified by'
                                      ' config option %r' % 
                                      (template_conf['file'], prefix+'file'))
-    elif template_conf.keys()[0] == 'obj':
+    elif list(template_conf.keys())[0] == 'obj':
         template = eval_import(template_conf['obj'])
         if not template:
             raise AuthKitConfigError('No data in template obj %s specified by '
@@ -291,10 +291,10 @@ def get_template(template_conf, prefix):
                                      (template_conf['obj'], prefix+'obj'))
     else:
         raise AuthKitConfigError("Unknown option %r" % 
-                                 (prefix+template_conf.keys()[0]))
+                                 (prefix+list(template_conf.keys())[0]))
     if not template:
         raise AuthKitConfigError("The template loaded did not contain any data")
-    if isinstance(template, (str, unicode)):
+    if isinstance(template, str):
         def render_template():
             return template
         return render_template
@@ -339,7 +339,7 @@ class RequireEnvironKey(object):
             'correct middleware?'
         
     def __call__(self, environ, start_response):
-        if not environ.has_key(self.key):
+        if self.key not in environ:
             raise Exception(self.missing_error%{'key':self.key})
         return self.app(environ, start_response)
 
@@ -360,8 +360,8 @@ def load_config(options, app_conf, prefix):
     merged = strip_base(app_conf, prefix)
     
     # Now override the auth_conf_options with the manaully specified options
-    for key, value in options.items():
-        if merged.has_key(key):
+    for key, value in list(options.items()):
+        if key in merged:
             warnings.warn(
                 'Key %s with value %r set in the config file is being ' + \
                 'replaced with value %r set in the application'%(
@@ -424,7 +424,7 @@ class HTTPExceptionHandler(object):
         try:
             return self.application(environ, start_response)        
         except (paste.httpexceptions.HTTPException, 
-                webob.exc.HTTPException), exc:        
+                webob.exc.HTTPException) as exc:        
             return exc(environ, start_response)
 
 def middleware(app, app_conf=None, global_conf=None, prefix='authkit.', 
@@ -487,19 +487,19 @@ def middleware(app, app_conf=None, global_conf=None, prefix='authkit.',
     available_methods = get_methods()
     
     all_conf = load_config(options, app_conf, prefix)
-    if middleware is not None and all_conf.has_key('setup.method'):
+    if middleware is not None and 'setup.method' in all_conf:
         raise AuthKitConfigError(
             'You cannot specify a middleware function '
             'and an authkit.setup.method'
         )
-    if not middleware and not all_conf.has_key('setup.method'):
+    if not middleware and 'setup.method' not in all_conf:
         raise AuthKitConfigError('No authkit.setup.method was specified')
 
     # Add the configuration to the environment
     enable_ =  asbool(all_conf.get('setup.enable', True))
     all_conf['setup.enable'] = enable_
     app = AddToEnviron(app, 'authkit.config', all_conf)
-    if all_conf.has_key('setup.fakeuser'):
+    if 'setup.fakeuser' in all_conf:
         app = AddToEnviron(app, 'REMOTE_USER', all_conf['setup.fakeuser'])
  
     # Check to see if middleware is disabled
@@ -534,13 +534,13 @@ def middleware(app, app_conf=None, global_conf=None, prefix='authkit.',
             if method in ['setup','config']:
                 raise AuthKitConfigError("The name %s is reserved cannot be used "
                                          "as a method name" % method)
-            if not available_methods.has_key(method):
+            if method not in available_methods:
                 raise AuthKitConfigError(
                     'The authkit method %r is not available. The available methods '
                     'are %s and %s'%(
                         all_conf['setup.method'],
-                        ', '.join(available_methods.keys()[:-1]),
-                        available_methods.keys()[-1],
+                        ', '.join(list(available_methods.keys())[:-1]),
+                        list(available_methods.keys())[-1],
                     )
                 )
             prefix_ = prefix+method+'.'
@@ -582,7 +582,7 @@ def sample_app(environ, start_response):
         authorize_request(environ, RemoteUser())
     if environ['PATH_INFO'] == '/signout':
         start_response('200 OK', [('Content-type', 'text/plain; charset=UTF-8')])
-        if environ.has_key('REMOTE_USER'):
+        if 'REMOTE_USER' in environ:
             return ["Signed Out"]
         else:
             return ["Not signed in"]
@@ -592,7 +592,7 @@ def sample_app(environ, start_response):
     else:
         start_response('200 OK', [('Content-type', 'text/plain; charset=UTF-8')])
     result = ['You Have Access To This Page.\n\nHere is the environment...\n\n']
-    for k,v in environ.items():
+    for k,v in list(environ.items()):
         result.append('%s: %s\n'%(k,v))
     return result
 
